@@ -16,9 +16,9 @@ impl<'a> Canvas<'a> {
     }
 
     pub fn draw_rect(&mut self, x: usize, y: usize, w: usize, h: usize, color: u32) {
-        for row in 0..w {
-            for col in 0..h {
-                self.put_pixel(x + col, y + row, color);
+        for x_px in x..x + w {
+            for y_px in y..y+ h {
+                self.put_pixel(x_px, y_px, color);
             }
         }
     }
@@ -26,6 +26,7 @@ impl<'a> Canvas<'a> {
     pub fn draw_rect_outline(&mut self, x: usize, y: usize, w: usize, h: usize, color: u32) {
         if w > 0 {
             for x_px in x..x +w {
+                //NOTE: Puts pixels even if h == 0, this results in h = 1 and h = 0 looking the same
                 self.put_pixel(x_px, y, color);
                 if h > 0 {
                     self.put_pixel(x_px, y + h - 1, color);
@@ -35,6 +36,7 @@ impl<'a> Canvas<'a> {
 
         if h > 0 {
             for y_px in y..y +h {
+                //NOTE: Puts pixels even if w == 0, this results in w = 1 and w = 0 looking the same
                 self.put_pixel(x, y_px, color);
                 if w > 0 {
                     self.put_pixel(x + w - 1, y_px, color);
