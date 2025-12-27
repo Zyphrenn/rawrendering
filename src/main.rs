@@ -75,6 +75,7 @@ impl ApplicationHandler for App {
                         },
                     ) {
                         println!("Error resizing surface: {:?}", e);
+                        return;
                     }
 
                     let mut buffer = match surface.buffer_mut() {
