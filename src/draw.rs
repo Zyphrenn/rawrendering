@@ -1,4 +1,10 @@
 use crate::draw::polygon::Polygon;
+use std::f32::consts::PI;
+
+// TODO: Fix mess with using isize/usize/f32 as params
+// Maybe the functions can be sorted into two categories:
+// Low-level, using only usize for efficiency
+// High-level, using isize and f32 to make things more comfortable to use
 
 pub mod polygon;
 
@@ -28,12 +34,6 @@ impl<'a> Canvas<'a> {
     }
 
     pub fn draw_rect(&mut self, x1: usize, y1: usize, x2: usize, y2: usize, color: u32) {
-        let from_x = x1.min(x2);
-        let from_y = y1.min(y2);
-
-        let to_x = x1.max(x2);
-        let to_y = y1.max(y2);
-
         for x_px in x1..x2 {
             for y_px in y1..y2 {
                 self.put_pixel(x_px, y_px, color);
@@ -75,7 +75,14 @@ impl<'a> Canvas<'a> {
         }
     }
 
-    pub fn draw_rect_with_transparency(&mut self, x1: usize, y1: usize, x2: usize, y2: usize, color: u32) {
+    pub fn draw_rect_with_transparency(
+        &mut self,
+        x1: usize,
+        y1: usize,
+        x2: usize,
+        y2: usize,
+        color: u32,
+    ) {
         let from_x = x1.min(x2);
         let from_y = y1.min(y2);
 
@@ -85,9 +92,9 @@ impl<'a> Canvas<'a> {
         for x_px in from_x..to_x {
             for y_px in from_y..to_y {
                 let old_color = self.get_pixel(x_px, y_px);
-                let old_r = (old_color >> 16) & 0xFF;   // 0xFF0000 -> 0x0000FF (4 hex sh = 16 bin sh), requires mask
-                let old_g = (old_color >> 8) & 0xFF;    // 0x00FF00 -> 0x0000FF (2 hex sh = 8 bin sh), requires mask
-                let old_b = old_color & 0xFF;           // 0x0000FF -> 0x0000FF (0 hex sh = 0 bin sh), requires mask
+                let old_r = (old_color >> 16) & 0xFF; // 0xFF0000 -> 0x0000FF (4 hex sh = 16 bin sh), requires mask
+                let old_g = (old_color >> 8) & 0xFF; // 0x00FF00 -> 0x0000FF (2 hex sh = 8 bin sh), requires mask
+                let old_b = old_color & 0xFF; // 0x0000FF -> 0x0000FF (0 hex sh = 0 bin sh), requires mask
 
                 let new_r = color >> 16 & 0xFF;
                 let new_g = (color >> 8) & 0xFF;
@@ -126,16 +133,20 @@ impl<'a> Canvas<'a> {
             self.put_pixel(
                 (x1 + delta_x * i) as usize,
                 (y1 + delta_y * i) as usize,
-                color
+                color,
             );
-            if i >= sample_points { break; }
+            if i >= sample_points {
+                break;
+            }
             i += 1f32;
         }
     }
 
     pub fn draw_polygon_outline(&mut self, polygon: Polygon<'a>) {
         let path_len = polygon.path.len();
-        if path_len < 2 { return; }
+        if path_len < 2 {
+            return;
+        }
 
         for i in 0..path_len {
             if i < path_len - 1 {
@@ -150,7 +161,18 @@ impl<'a> Canvas<'a> {
         }
     }
 
-    pub fn draw_cubic_bezier_curve_outline(&mut self, x1: isize, y1: isize, x1_c: isize, y1_c: isize, x2: isize, y2: isize, x2_c: isize, y2_c: isize, color: u32) {
+    pub fn draw_cubic_bezier_curve_outline(
+        &mut self,
+        x1: isize,
+        y1: isize,
+        x1_c: isize,
+        y1_c: isize,
+        x2: isize,
+        y2: isize,
+        x2_c: isize,
+        y2_c: isize,
+        color: u32,
+    ) {
         // x1, y1 = Start of curve
         // x1_c, y2_c = First 'Control Point', for (x1, y1), sets curvature at start of curve
         // x2, y2 = End of curve
@@ -167,13 +189,10 @@ impl<'a> Canvas<'a> {
 
         // This makes the lines more full and ensures that even the most extreme curves don't have gaps.
         // Multiplying it by 2x can lead to improvements, 4x as well but the returns diminish quickly
-        let sample_points =(
-            ((x1-x1_c)*(x1-x1_c) + (y1-y1_c)*(y1-y1_c)).sqrt() +
-            ((x1_c-x2_c)*(x1_c-x2_c) + (y1_c-y2_c)*(y1_c-y2_c)).sqrt() +
-            ((x2_c-x2)*(x2_c-x2) + (y2_c-y2)*(y2_c-y2)).sqrt()) * 4f32;
-
-        println!("sample points: {}", sample_points);
-        println!("old sample pt: {}", (x1*x2 + y1*y2).sqrt());
+        let sample_points = (((x1 - x1_c) * (x1 - x1_c) + (y1 - y1_c) * (y1 - y1_c)).sqrt()
+            + ((x1_c - x2_c) * (x1_c - x2_c) + (y1_c - y2_c) * (y1_c - y2_c)).sqrt()
+            + ((x2_c - x2) * (x2_c - x2) + (y2_c - y2) * (y2_c - y2)).sqrt())
+            * 4f32;
 
         // Constants, do not re-calculate
         let delta_inter_1_x = (x1_c - x1) / sample_points;
@@ -213,7 +232,45 @@ impl<'a> Canvas<'a> {
 
             self.put_pixel(x_px, y_px, color);
 
-            if i >= sample_points { break; }
+            if i >= sample_points {
+                break;
+            }
+            i += 1f32;
+        }
+    }
+
+    pub fn draw_circle(&mut self, mid_x: usize, mid_y: usize, r: usize, color: u32) {
+        for x in -(r as isize)..r as isize {
+            for y in -(r as isize)..r as isize {
+                if x * x + y * y <= (r * r) as isize {
+                    self.put_pixel(
+                        (mid_x as isize + x) as usize,
+                        (mid_y as isize + y) as usize,
+                        color,
+                    );
+                }
+            }
+        }
+    }
+
+    pub fn draw_circle_outline(&mut self, mid_x: usize, mid_y: usize, r: usize, color: u32) {
+        let r_f32 = r as f32;
+
+        let sample_points = 2f32 * PI * r_f32 * r_f32.sqrt(); // Maybe try not to use sqrt, but for now it's to make scaling consistent, also it can grow pretty quickly
+        let mut i = 0f32;
+
+        loop {
+            let px_x = (i.cos() * r_f32) + mid_x as f32;
+            let px_y = (i.sin() * r_f32) + mid_y as f32;
+
+            if px_x >= 0f32 && px_y >= 0f32 {
+                self.put_pixel(px_x as usize, px_y as usize, color);
+            }
+
+
+            if i >= sample_points {
+                break;
+            }
             i += 1f32;
         }
     }

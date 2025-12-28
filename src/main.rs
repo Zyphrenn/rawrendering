@@ -190,6 +190,23 @@ impl ApplicationHandler for App {
                         0x00AAFF44
                     );
 
+                    canvas.draw_circle(200, 200, 32, 0x00AA5533);
+                    canvas.draw_circle_outline(200, 200, 32 * 16, 0x0044FFFF);
+
+                    canvas.draw_polygon_outline(
+                        Polygon {
+                            path: &[
+                                (530, 450),
+                                (570, 450),
+                                (590, 470),
+                                (570, 490),
+                                (530, 490)
+                            ],
+                            color: 0x0055AAAA,
+                            closed: true,
+                        }
+                    );
+
                     if let Err(e) = buffer.present() {
                         println!("Error presenting buffer: {:?}", e);
                     }
