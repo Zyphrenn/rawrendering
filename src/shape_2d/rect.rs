@@ -9,24 +9,23 @@ pub(crate) struct Rect {
     pub(crate) height: usize,
     pub(crate) fill_color: u32,
     pub(crate) outline_color: u32,
-    //TODO: pub(crate) fill_thickness: usize,
+    //TODO: pub(crate) outline_thickness: usize,
 }
 
 impl Shape2D for Rect {
     fn draw(&self, graphics_2d: &mut Graphics2D) {
-        // Check whether there's something to draw on
         // No zero-width or zero-height rects
-        if graphics_2d.canvas.is_none() || self.width == 0 || self.height == 0 { return; }
+        if self.width == 0 || self.height == 0 { return; }
 
-        let is_outline_transparent = self.outline_color >> 24 != 0xFF;
+        let is_outline_transparent = self.outline_color >> 24 == 0xFF;
 
         // Check whether color is fully transparent, if so, don't draw fill
         if self.fill_color >> 24 != 0xFF {  // 0xFF000000 -> 0x000000FF (6 hex sh = 24 bin sh)
             // ... more efficiency? :3c mayhaps
             let (start_x, start_y, end_x, end_y ) = if is_outline_transparent {
-                (1, 1, self.width - 1, self.height - 1)
-            } else {
                 (0, 0, self.width, self.height)
+            } else {
+                (1, 1, self.width - 1, self.height - 1)
             };
 
             for x_px in start_x..end_x {
@@ -37,7 +36,7 @@ impl Shape2D for Rect {
         }
 
         // Repeat for outline (if present)
-        if is_outline_transparent {
+        if !is_outline_transparent {
             // Uhm ... efficiency? :3c
             if self.height > 1 {
                 for i in 0..self.width {
@@ -50,19 +49,17 @@ impl Shape2D for Rect {
                 }
             }
 
-            if self.height > 1 {
-                for i in 0..self.width {
+            if self.width > 1 {
+                for i in 0..self.height {
                     graphics_2d._set_pixel(0, i, self.outline_color, &self.base);
                     graphics_2d._set_pixel(self.width - 1, i, self.outline_color, &self.base);
                 }
             }
             else {
-                for i in 0..self.width {
+                for i in 0..self.height {
                     graphics_2d._set_pixel(0, i, self.outline_color, &self.base);
                 }
             }
         }
     }
-
-    fn get_object_data(&self) -> &Object2D { &self.base }
 }

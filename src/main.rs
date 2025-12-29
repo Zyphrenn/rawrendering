@@ -7,11 +7,16 @@ use winit::application::ApplicationHandler;
 use winit::event::WindowEvent;
 use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
 use winit::window::{Window, WindowId};
+use winit::window::CursorIcon::Default;
 use crate::canvas::Canvas;
 use crate::canvas::polygon::Polygon;
 use crate::graphics_2d::Graphics2D;
 use crate::object_2d::Object2D;
+use crate::shape_2d::circle::Circle;
+use crate::shape_2d::path_trace::cubic_bezier_curve::CubicBezierCurve2D;
+use crate::shape_2d::path_trace::line::Line2D;
 use crate::shape_2d::rect::Rect;
+use crate::shape_2d::vector_path::VectorPath2D;
 use crate::utils::vec2::Vec2;
 
 mod canvas;
@@ -69,7 +74,6 @@ impl ApplicationHandler for App {
             },
             WindowEvent::RedrawRequested => {
                 if let (Some(surface), Some(window)) = (self.surface.as_mut(), self.window.as_ref()) {
-
                     let size = window.inner_size();
                     let (width, height) = (size.width, size.height);
 
@@ -103,22 +107,129 @@ impl ApplicationHandler for App {
 
                     canvas.clear(0x000000);
 
-                    canvas.draw_rect(20, 20, 52, 52, 0x00FF00FF);
-                    canvas.draw_rect(128, 64, 192, 96, 0x00664499);
-                    canvas.draw_rect_outline(128, 64, 192, 128, 0x00AA55FF);
-                    canvas.draw_rect_outline(200, 200, 400, 200, 0x00FFAAAA);
-                    canvas.draw_rect_outline(200, 210, 400, 211, 0x00AAFFAA);
-                    canvas.draw_rect_outline(200, 220, 400, 222, 0x00AAAAFF);
-                    canvas.draw_rect_with_transparency(8, (height.max(32) - 32) as usize, (width.max(8) - 8) as usize, (height.max(8) - 8) as usize, 0x7799DDFF);
-                    canvas.draw_rect_outline(8, (height.max(32) - 32) as usize, (width.max(8) - 8) as usize, (height.max(8) - 8) as usize, 0x0099DDFF);
+                    let mut graphics = Graphics2D {
+                        canvas: &mut canvas,
+                    };
 
-                    canvas.draw_rect(300, 64, 364, 128, 0xFF0000);
-                    canvas.draw_rect_with_transparency(332, 96, 396, 160, 0x8800FF00);
+                    graphics.draw_shape(&Rect {
+                        base: Object2D {
+                            offset: Vec2::new(20, 20),
+                            ..Object2D::default()
+                        },
+                        width: 32,
+                        height: 32,
+                        fill_color: 0x00FF00FF,
+                        outline_color: 0xFF000000,
+                    });
 
-                    canvas.draw_line(30, 30, 60, 90, 0x00FFFFFF);
-                    canvas.draw_line(0, height as isize, width as isize, 0, 0x00AAAAAA);
+                    graphics.draw_shape(&Rect {
+                        base: Object2D {
+                            offset: Vec2::new(128, 64),
+                            ..Object2D::default()
+                        },
+                        width: 64,
+                        height: 32,
+                        fill_color: 0x00664499,
+                        outline_color: 0xFF000000,
+                    });
 
-                    canvas.draw_polygon_outline(
+                    graphics.draw_shape(&Rect {
+                        base: Object2D {
+                            offset: Vec2::new(128, 64),
+                            ..Object2D::default()
+                        },
+                        width: 64,
+                        height: 64,
+                        fill_color: 0xFF000000,
+                        outline_color: 0x00AA55FF,
+                    });
+
+                    graphics.draw_shape(&Rect {
+                        base: Object2D {
+                            offset: Vec2::new(200, 200),
+                            ..Object2D::default()
+                        },
+                        width: 200,
+                        height: 0,
+                        fill_color: 0xFF000000,
+                        outline_color: 0x00FFAAAA,
+                    });
+
+                    graphics.draw_shape(&Rect {
+                        base: Object2D {
+                            offset: Vec2::new(200, 210),
+                            ..Object2D::default()
+                        },
+                        width: 200,
+                        height: 1,
+                        fill_color: 0xFF000000,
+                        outline_color: 0x00AAFFAA,
+                    });
+
+                    graphics.draw_shape(&Rect {
+                        base: Object2D {
+                            offset: Vec2::new(200, 220),
+                            ..Object2D::default()
+                        },
+                        width: 200,
+                        height: 2,
+                        fill_color: 0xFF000000,
+                        outline_color: 0x00AAAAFF,
+                    });
+
+                    //canvas.draw_rect_with_transparency(8, (height.max(32) - 32) as usize, (width.max(8) - 8) as usize, (height.max(8) - 8) as usize, 0x7799DDFF);
+
+                    graphics.draw_shape(&Rect {
+                        base: Object2D {
+                            offset: Vec2::new(8, -32),
+                            relative_offset: Vec2::new(0f32, 1f32),
+                            ..Object2D::default()
+                        },
+                        width: (width.max(16) - 16) as usize,
+                        height: 24,
+                        outline_color: 0x0099DDFF,
+                        fill_color: 0xFF000000, //TODO: Implement transparency mixing in-canvas, then change this to 0x7799DDFF and remove the above rect draw call
+                    });
+
+                    graphics.draw_shape(&Rect {
+                        base: Object2D {
+                            offset: Vec2::new(300, 64),
+                            ..Object2D::default()
+                        },
+                        width: 64,
+                        height: 64,
+                        fill_color: 0x00FF0000,
+                        outline_color: 0xFF000000,
+                    });
+
+                    //canvas.draw_rect_with_transparency(332, 96, 396, 160, 0x8800FF00); // TODO: Replace when transparency mixing is done in-canvas
+
+                    graphics.draw_shape(&VectorPath2D {
+                        base: Object2D {
+                            offset: Vec2::new(30, 30),
+                            ..Object2D::default()
+                        },
+                        path: &[
+                            Box::new(Line2D {
+                                from: Vec2::new(0, 0),
+                                to: Vec2::new(30, 60),
+                                color: 0x00FFFFFF,
+                            }),
+                        ],
+                    });
+
+                    graphics.draw_shape(&VectorPath2D {
+                        base: Object2D::default(),
+                        path: &[
+                            Box::new(Line2D {
+                                from: Vec2::new(0, height as isize),
+                                to: Vec2::new(width as isize, 0),
+                                color: 0x00AAAAAA,
+                            }),
+                        ],
+                    });
+
+                    /*canvas.draw_polygon_outline(
                         Polygon {
                             path: &[
                                 (100, 100),
@@ -131,8 +242,9 @@ impl ApplicationHandler for App {
                             color: 0x00FFAAAA,
                             closed: true,
                         }
-                    );
+                    );*/
 
+                    /*
                     canvas.draw_polygon_outline(
                         Polygon {
                             path: &[
@@ -145,8 +257,9 @@ impl ApplicationHandler for App {
                             color: 0x0000FFAA,
                             closed: false,
                         }
-                    );
+                    );*/
 
+                    /*
                     // <3
                     canvas.draw_polygon_outline(
                         Polygon {
@@ -165,14 +278,15 @@ impl ApplicationHandler for App {
                             color: 0x00FF0000,
                             closed: true,
                         }
-                    );
+                    );*/
 
 
+                    /*
                     canvas.draw_rect_outline(200, 200, 400, 400, 0x00888888);
                     canvas.draw_line(200, 200, 300,  200, 0x00FF8888);
-                    canvas.draw_line(300, 400, 400, 400, 0x008888FF);
+                    canvas.draw_line(300, 400, 400, 400, 0x008888FF);*/
 
-
+                    /*
                     // Bezier curves
                     canvas.draw_cubic_bezier_curve_outline(
                         200, 200,
@@ -196,11 +310,31 @@ impl ApplicationHandler for App {
                         400, 400,
                         400, -100,
                         0x00AAFF44
-                    );
+                    );*/
 
-                    canvas.draw_circle(200, 200, 32, 0x00AA5533);
-                    canvas.draw_circle_outline(200, 200, 32 * 16, 0x0044FFFF);
+                    graphics.draw_shape(&Circle {
+                        base: Object2D {
+                            offset: Vec2::new(200, 200),
+                            anchor: Vec2::new(32, 32),
+                            ..Object2D::default()
+                        },
+                        radius: 32,
+                        fill_color: 0x00AA5533,
+                        outline_color: 0xFF000000,
+                    });
 
+                    graphics.draw_shape(&Circle {
+                        base: Object2D {
+                            offset: Vec2::new(200, 200),
+                            anchor: Vec2::new(32 * 16, 32 * 16),
+                            ..Object2D::default()
+                        },
+                        radius: 32 * 16,
+                        fill_color: 0xFF000000,
+                        outline_color: 0x0044FFFF,
+                    });
+
+                    /*
                     canvas.draw_polygon_outline(
                         Polygon {
                             path: &[
@@ -213,11 +347,7 @@ impl ApplicationHandler for App {
                             color: 0x0055AAAA,
                             closed: true,
                         }
-                    );
-
-                    let mut graphics = Graphics2D {
-                        canvas: &mut Some(canvas),
-                    };
+                    );*/
 
                     graphics.draw_shape(
                         &Rect {
@@ -244,6 +374,78 @@ impl ApplicationHandler for App {
                             height: 32,
                             fill_color: 0x00AA2266,
                             outline_color: 0xFF000000,
+                        }
+                    );
+
+                    graphics.draw_shape(
+                        &Circle {
+                            base: Object2D {
+                                offset: Vec2::new(75, 50),
+                                ..Object2D::default()
+                            },
+                            radius: 20,
+                            fill_color: 0x00FF0000,
+                            outline_color: 0x00FFFFFF,
+                            ..Circle::default()
+                        }
+                    );
+
+                    graphics.draw_shape(
+                        &VectorPath2D {
+                            base: Object2D::default(),
+                            path: &[
+                                Box::new(Line2D {
+                                    from: Vec2::new(0, 0),
+                                    to: Vec2::new(50, 0),
+                                    color: 0x0000FFFF,
+                                }),
+                                Box::new(CubicBezierCurve2D {
+                                    from: Vec2::new(50, 0),
+                                    to: Vec2::new(100, 50),
+                                    from_control_point: Vec2::new(100, 0),
+                                    to_control_point: Vec2::new(100, 0),
+                                    color: 0x0000FFFF,
+                                }),
+                            ],
+                        }
+                    );
+
+                    graphics.draw_shape(
+                        &VectorPath2D {
+                            base: Object2D {
+                                offset: Vec2::new(750, 600),
+                                ..Object2D::default()
+                            },
+                            path: &[
+                                Box::new(CubicBezierCurve2D {
+                                    from: Vec2::new(100, 50),
+                                    to: Vec2::new(200, 50),
+                                    from_control_point: Vec2::new(110, -15),
+                                    to_control_point: Vec2::new(200, -15),
+                                    color: 0x00FF0000,
+                                }),
+                                Box::new(CubicBezierCurve2D {
+                                    from: Vec2::new(200, 50),
+                                    to: Vec2::new(100, 175),
+                                    from_control_point: Vec2::new(200, 100),
+                                    to_control_point: Vec2::new(150, 150),
+                                    color: 0x00FF0000,
+                                }),
+                                Box::new(CubicBezierCurve2D {
+                                    from: Vec2::new(100, 175),
+                                    to: Vec2::new(0, 50),
+                                    from_control_point: Vec2::new(50, 150),
+                                    to_control_point: Vec2::new(0, 100),
+                                    color: 0x00FF0000,
+                                }),
+                                Box::new(CubicBezierCurve2D {
+                                    from: Vec2::new(0, 50),
+                                    to: Vec2::new(100, 50),
+                                    from_control_point: Vec2::new(0, -15),
+                                    to_control_point: Vec2::new(90, -15),
+                                    color: 0x00FF0000,
+                                })
+                            ]
                         }
                     );
 
