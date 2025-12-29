@@ -14,8 +14,22 @@ hope to create a very performant/resource-efficient 2D (and maybe 3D in the futu
 CPU rendering. I want this project to be platform-agnostic, that means I want to be able to compile it for any platform
 with no or minimal tampering with the code.
 
-## What's planned
+## Example
 
+This example showcases the program's current abilities on the current commit.
+
+That includes:
+- Vector paths that use both straight lines and cubic bezier curves
+- Circles (w/ outlines)
+- Rectangles (w/ outlines)
+- Absolute and relative positioning and anchor usage
+
+<img src="./public/rawrendering_example.webp" alt="An example image of the program's output.">
+
+## What's planned
+I'll check these things as they get done :3
+
+- [ ] Memory optimization (currently needs 21.4 MiB at 1440p, screen buffer should take 10.54 MiB, objects take only 0.1 MiB, the rest is probably taken by winit and softbuffer)
 - [ ] Text rendering
   - [ ] Own font format, won't be implementing standard formats
     - [ ] Pixel-based fonts
@@ -30,10 +44,14 @@ with no or minimal tampering with the code.
 - [ ] Proper scaling for any rendered object
 - [ ] Own markup language, maybe I'll just utilize XML or JSON, I don't wanna make my own parser.
 - [ ] Proper object positioning system (adding offsets/anchors universally to any shape/rendered object)
+  - [x] Absolute offset
+  - [x] Relative offset
+  - [x] Absolute anchor point
+  - [ ] Relative anchor point
 - [ ] Relative units (%, maybe something like vw/vh and parent-relative % if I implement the necessary underlying 
 architecture)
 - [ ] 3D object rendering (very basic, no gpu acceleration)
-- [ ] Re-structure modules - everything does one thing
+- [x] Re-structure modules - everything does one thing
 - [ ] Fix color transparent mixing, make it work blend regardless of method used
 - [ ] Gradient object fills and outlines
 - [ ] Maybe grouping objects together? To control transparency of all of them at once? :3 
