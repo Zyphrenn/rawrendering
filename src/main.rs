@@ -236,20 +236,6 @@ impl ApplicationHandler for App {
                     graphics.draw_shape(
                         &Rect {
                             base: Object2D {
-                                offset: Vec2::new(12, 24),
-                                ..Object2D::default()
-                            },
-                            height: 64,
-                            width: 64,
-                            fill_color: 0x00000000,
-                            outline_color: 0xFF000000,
-                            ..Rect::default()
-                        }
-                    );
-
-                    graphics.draw_shape(
-                        &Rect {
-                            base: Object2D {
                                 relative_offset: Vec2::new(0.5, 0.5),
                                 anchor: Vec2::new(16, 16),
                                 ..Object2D::default()
