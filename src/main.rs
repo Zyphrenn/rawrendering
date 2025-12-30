@@ -177,20 +177,6 @@ impl ApplicationHandler for App {
                         outline_color: 0x00AAAAFF,
                     });
 
-                    //canvas.draw_rect_with_transparency(8, (height.max(32) - 32) as usize, (width.max(8) - 8) as usize, (height.max(8) - 8) as usize, 0x7799DDFF);
-
-                    graphics.draw_shape(&Rect {
-                        base: Object2D {
-                            offset: Vec2::new(8, -32),
-                            relative_offset: Vec2::new(0f32, 1f32),
-                            ..Object2D::default()
-                        },
-                        width: (width.max(16) - 16) as usize,
-                        height: 24,
-                        outline_color: 0x0099DDFF,
-                        fill_color: 0xFF000000, //TODO: Implement transparency mixing in-canvas, then change this to 0x7799DDFF and remove the above rect draw call
-                    });
-
                     graphics.draw_shape(&Rect {
                         base: Object2D {
                             offset: Vec2::new(300, 64),
@@ -202,7 +188,16 @@ impl ApplicationHandler for App {
                         outline_color: 0xFF000000,
                     });
 
-                    //canvas.draw_rect_with_transparency(332, 96, 396, 160, 0x8800FF00); // TODO: Replace when transparency mixing is done in-canvas
+                    graphics.draw_shape(&Rect {
+                        base: Object2D {
+                            offset: Vec2::new(332, 96),
+                            ..Object2D::default()
+                        },
+                        width: 64,
+                        height: 64,
+                        fill_color: 0x8800FF00,
+                        outline_color: 0xFF000000,
+                    });
 
                     graphics.draw_shape(&VectorPath2D {
                         base: Object2D {
@@ -448,6 +443,31 @@ impl ApplicationHandler for App {
                             ]
                         }
                     );
+
+                graphics.draw_shape(&Rect {
+                        base: Object2D {
+                            offset: Vec2::new(8, -32),
+                            relative_offset: Vec2::new(0f32, 1f32),
+                            ..Object2D::default()
+                        },
+                        width: (width.max(16) - 16) as usize,
+                        height: 24,
+                        outline_color: 0x0099DDFF,
+                        fill_color: 0x7799DDFF,
+                    });
+
+                    graphics.draw_shape(&Rect {
+                        base: Object2D {
+                            offset: Vec2::new(64, 64),
+                            relative_offset: Vec2::new(0.5, 0.5),
+                            anchor: Vec2::new(16, 16),
+                            ..Object2D::default()
+                        },
+                        width: 32,
+                        height: 32,
+                        fill_color: 0x000000FF,
+                        outline_color: 0x2200FF00,
+                    });
 
                     if let Err(e) = buffer.present() {
                         println!("Error presenting buffer: {:?}", e);
