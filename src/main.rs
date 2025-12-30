@@ -466,9 +466,46 @@ impl ApplicationHandler for App {
                         width: 32,
                         height: 32,
                         fill_color: 0x000000FF,
-                        outline_color: 0x2200FF00,
+                        outline_color: 0x0000FF00,
                     });
 
+                    graphics.draw_shape(&Circle {
+                        base: Object2D {
+                            anchor: Vec2::new(16, 16),
+                            relative_offset: Vec2::new(0.5, 0.5),
+                            ..Object2D::default()
+                        },
+                        radius: 16,
+                        fill_color: 0x000000FF,
+                        outline_color: 0xCCFFFFFF,
+                    });
+
+                    graphics.draw_shape(&Circle {
+                        base: Object2D::default(),
+                        radius: 0xFF,
+                        fill_color: 0xFF000000,
+                        outline_color: 0xCCFF00FF,
+                    });
+
+                    graphics.draw_shape(&Circle {
+                        base: Object2D::default(),
+                        radius: 0xFA,
+                        fill_color: 0xFF000000,
+                        outline_color: 0x00FF00FF,
+                    });
+
+                    graphics.draw_shape(&Rect {
+                        base: Object2D {
+                            offset: Vec2::new(512, 256),
+                            ..Object2D::default()
+                        },
+                        height: 32,
+                        width: 16,
+                        fill_color: 0xCCFF00FF,
+                        outline_color: 0xFFFF00FF,
+                    });
+
+                    // Render buffer to screen
                     if let Err(e) = buffer.present() {
                         println!("Error presenting buffer: {:?}", e);
                     }

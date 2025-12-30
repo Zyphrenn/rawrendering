@@ -17,15 +17,15 @@ impl Shape2D for Rect {
         // No zero-width or zero-height rects
         if self.width == 0 || self.height == 0 { return; }
 
-        let is_outline_transparent = self.outline_color >> 24 == 0xFF;
+        let outline_alpha = self.outline_color >> 24 & 0xFF;
 
         // Check whether color is fully transparent, if so, don't draw fill
-        if self.fill_color >> 24 != 0xFF {  // 0xFF000000 -> 0x000000FF (6 hex sh = 24 bin sh)
+        if self.fill_color >> 24 & 0xFF != 0xFF {  // 0xFF000000 -> 0x000000FF (6 hex sh = 24 bin sh)
             // ... more efficiency? :3c mayhaps
-            let (start_x, start_y, end_x, end_y ) = if is_outline_transparent {
-                (0, 0, self.width, self.height)
-            } else {
+            let (start_x, start_y, end_x, end_y ) = if outline_alpha == 0xFF {
                 (1, 1, self.width - 1, self.height - 1)
+            } else {
+                (0, 0, self.width, self.height)
             };
 
             for x_px in start_x..end_x {
@@ -36,18 +36,20 @@ impl Shape2D for Rect {
         }
 
         // Draw outline (if present)
-        if !is_outline_transparent {
+        if outline_alpha != 0xFF {
             let width = self.width - 1;
             let height = self.height - 1;
 
             // top and bottom
             for x in 0..self.width {
+                println!("Vertical rect border fill");
                 graphics_2d._set_pixel(x, 0, self.outline_color, &self.base);
                 graphics_2d._set_pixel(x, height, self.outline_color, &self.base);
             }
             
             // left and right
-            for y in 0..self.height {
+            for y in 1..self.height - 1 {
+                println!("Horizontal rect border fill");
                 graphics_2d._set_pixel(0, y, self.outline_color, &self.base);
                 graphics_2d._set_pixel(width, y, self.outline_color, &self.base);
             }

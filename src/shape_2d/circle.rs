@@ -17,14 +17,14 @@ impl Shape2D for Circle {
         // No zero-radius circles
         if self.radius == 0 { return; }
 
-        let is_outline_transparent = self.outline_color >> 24 == 0xFF;
+        let outline_alpha = self.outline_color >> 24;
 
         // Check whether color is fully transparent, if so, don't draw fill
         if self.fill_color >> 24 != 0xFF {  // 0xFF000000 -> 0x000000FF (6 hex sh = 24 bin sh)
-            let (start_offset, end_offset) = if is_outline_transparent {
-                (-(self.radius as isize), self.radius as isize)
+            let (start_offset, end_offset) = if outline_alpha == 0xFF {
+                (-(self.radius as isize) + 1, (self.radius as isize) - 1)
             } else {
-                (-(self.radius as isize) + 1, (self.radius as isize) - 1) //TODO: Later change to self.outline_thickness
+                (-(self.radius as isize), self.radius as isize)
             };
 
             for x_px in start_offset..end_offset {
@@ -42,10 +42,10 @@ impl Shape2D for Circle {
         }
 
         // Draw outline (if present)
-        if !is_outline_transparent {
+        if outline_alpha != 0xFF {
             let r_f32 = self.radius as f32;
 
-            let sample_points = 2f32 * PI * r_f32 * r_f32.sqrt(); // Maybe try not to use sqrt, but for now it's to make scaling consistent, also it can grow pretty quickly
+            let sample_points = 4f32 / 2f32.sqrt() * PI * r_f32; // Maybe try not to use sqrt, but for now it's to make scaling consistent, also it can grow pretty quickly
             let mut i = 0f32;
 
             loop {
