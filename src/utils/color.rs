@@ -23,9 +23,7 @@ impl Color {
         let bg_a = self.value >> 24 & 0xFF;
         let fg_a_standard = 1f32 - (fg_a as f32 / 255f32);
         let bg_a_standard = 1f32 - (bg_a as f32 / 255f32);
-        let fin_a = ((1f32 - (fg_a_standard + bg_a_standard * (1f32 - fg_a_standard))) * 255f32) as u32 & 0xFF; 
-
-        println!("fg: {:x}, bg: {:x}, fin: {:x}", fg_a, bg_a, fin_a );
+        let fin_a = ((1f32 - (fg_a_standard + bg_a_standard * (1f32 - fg_a_standard))) * 255f32) as u32 & 0xFF;
         
         let alpha = fg_a as f32 / 255f32; // 0xFF00000000 -> 0x000000FF (6 hex sh = 24 bin sh), mask isn't strictly necessary for u32
 
